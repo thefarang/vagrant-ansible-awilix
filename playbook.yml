@@ -44,22 +44,22 @@
         state: installed
         update_cache: true
       register: yarninstalled
-      when: yarnppainstalled|success
+      #when: yarnppainstalled|success
 
-    - name: Install Node Express
-      shell: yarn global add express-generator
-      register: expressinstalled
-      when: yarninstalled|success
+    #- name: Install Node Express
+      #shell: yarn global add express-generator
+      #register: expressinstalled
+      #when: yarninstalled|success
 
-    - name: Create App Directory
-      shell: mkdir {{ APPSOURCE }}
-      args:
-        creates: "{{ APPSOURCE }}"
-      register: appdircreated
-      when: expressinstalled|success
+    #- name: Create App Directory
+      #shell: mkdir {{ APPSOURCE }}
+      #args:
+        #creates: "{{ APPSOURCE }}"
+      #register: appdircreated
+      #when: expressinstalled|success
 
-    - name: Setup Boilerplate Express App
-      command: express .
-      args:
-        chdir: "{{ APPSOURCE }}"
-      when: appdircreated|success
+    #- name: Setup Boilerplate Express App
+      #command: express .
+      #args:
+        #chdir: "{{ APPSOURCE }}"
+      #when: appdircreated|success
