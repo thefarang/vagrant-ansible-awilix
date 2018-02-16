@@ -1,0 +1,65 @@
+- hosts: vagrant
+  become: true
+  vars:
+    - NODESOURCE: https://deb.nodesource.com/setup_8.x 
+    - APPSOURCE: /vagrant/src
+    - DEBIANPUBKEYLOC: https://dl.yarnpkg.com/debian/pubkey.gpg 
+    - YARNPPA: "deb https://dl.yarnpkg.com/debian/ stable main"
+    - APTGETSOURCES: /etc/apt/sources.list.d/yarn.list
+    - ansible_python_interpreter: /usr/bin/python3.5
+  tasks:
+    - name: Install Curl
+      apt:
+        name: curl
+        state: present
+        update_cache: yes # sudo apt-get update
+      register: curlinstalled
+
+    - name: Download Node Source
+      shell: curl -sL {{ NODESOURCE }} | sudo -E bash -
+      register: nodedownloaded 
+      when: curlinstalled|success
+
+    - name: Install Nodejs
+      apt:
+        name: nodejs
+        state: installed
+        update_cache: true
+      register: nodeinstalled
+      when: nodedownloaded|success
+    
+    - name: Install Debian Public Key
+      shell: curl -sS {{ DEBIANPUBKEYLOC }} | sudo apt-key add -
+      register: debpubkeyinstalled
+      when: nodeinstalled|success
+
+    - name: Install Yarn PPA
+      shell: echo {{ YARNPPA }} | sudo tee {{ APTGETSOURCES }}
+      register: yarnppainstalled
+      when: debpubkeyinstalled|success
+
+    - name: Install Yarn
+      apt:
+        name: yarn
+        state: installed
+        update_cache: true
+      register: yarninstalled
+      when: yarnppainstalled|success
+
+    - name: Install Node Express
+      shell: yarn global add express-generator
+      register: expressinstalled
+      when: yarninstalled|success
+
+    - name: Create App Directory
+      shell: mkdir {{ APPSOURCE }}
+      args:
+        creates: "{{ APPSOURCE }}"
+      register: appdircreated
+      when: expressinstalled|success
+
+    - name: Setup Boilerplate Express App
+      command: express .
+      args:
+        chdir: "{{ APPSOURCE }}"
+      when: appdircreated|success
